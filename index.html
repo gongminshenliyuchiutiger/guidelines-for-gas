@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>校園資安與個資保護守則｜教職員 GAS 與雲端工具合規指引</title>
+    
+    <!-- SEO 與社群分享 Meta 標籤 -->
+    <meta name="description" content="全校各處室使用 Google Apps Script (GAS)、Google 試算表及公有雲工具之合規作業守則。符合中華民國個資法與資通安全管理法，提供迷思解構、紅黃綠燈資料判定、實務解套方案與自檢清單。">
+    <meta name="keywords" content="資安, 個資法, GAS, Google Apps Script, 校園資安, Google試算表, 個資保護, 行政指引, 教育部資安規範">
+    <meta name="author" content="Liyuchiutiger Gongminshen">
+    <meta property="og:title" content="校園資安與個資保護守則｜教職員 GAS 與雲端工具合規指引">
+    <meta property="og:description" content="解析公有雲與自建 GAS 系統資安規範，提供資料紅黃綠燈快查表與三種實務解套方案。">
+    <meta property="og:type" content="article">
+    <meta property="og:locale" content="zh_TW">
+
+    <!-- Font Awesome 6 CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Google Fonts 繁體中文支援 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #0284c7;
+            --primary-dark: #0369a1;
+            --primary-light: #e0f2fe;
+            --secondary: #0f172a;
+            --bg-light: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #334155;
+            --text-muted: #64748b;
+            --danger: #ef4444;
+            --danger-bg: #fee2e2;
+            --danger-text: #991b1b;
+            --warning: #f59e0b;
+            --warning-bg: #fef3c7;
+            --warning-text: #92400e;
+            --success: #10b981;
+            --success-bg: #dcfce7;
+            --success-text: #166534;
+            --border: #e2e8f0;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.12);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-main);
+            line-height: 1.75;
+            padding-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Hero 區塊 */
+        .hero {
+            background: linear-gradient(135deg, #0b1329 0%, #1e293b 100%);
+            color: #ffffff;
+            padding: 60px 20px 48px;
+            text-align: center;
+            border-bottom: 4px solid var(--primary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 50% 20%, rgba(2, 132, 199, 0.18), transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero h1 {
+            font-size: 2.25rem;
+            font-weight: 900;
+            margin-top: 16px;
+            margin-bottom: 12px;
+            letter-spacing: 0.6px;
+            line-height: 1.3;
+        }
+
+        .hero p {
+            font-size: 1.12rem;
+            color: #cbd5e1;
+            max-width: 820px;
+            margin: 0 auto 22px;
+        }
+
+        .law-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: rgba(2, 132, 199, 0.22);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.45);
+            padding: 7px 18px;
+            border-radius: 9999px;
+            font-size: 0.92rem;
+            font-weight: 500;
+            backdrop-filter: blur(4px);
+        }
+
+        /* 頂部快捷操作列 */
+        .action-bar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: rgba(255, 255, 255, 0.12);
+            color: #f1f5f9;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .action-btn:hover {
+            background-color: rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+            transform: translateY(-2px);
+        }
+
+        /* 標題共用樣式 */
+        .section-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--secondary);
+            margin: 50px 0 22px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-left: 5px solid var(--primary);
+            padding-left: 14px;
+        }
+
+        /* 卡片共用樣式 */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 22px;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        /* 法律宣示卡 */
+        .legal-banner-card {
+            margin-top: 30px;
+            border-left: 5px solid var(--primary-dark);
+            background: linear-gradient(180deg, #f0f9ff 0%, #ffffff 100%);
+            border-color: #bae6fd;
+        }
+
+        /* 迷思解構網格（六個項目採 3 欄式對稱排版） */
+        .myths-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        @media (max-width: 992px) {
+            .myths-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .myth-card {
+            border-top: 4px solid var(--danger);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .myth-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            color: var(--danger);
+            font-weight: 700;
+            margin-bottom: 12px;
+            font-size: 1.05rem;
+            line-height: 1.4;
+        }
+
+        .myth-answer {
+            color: var(--text-main);
+            font-size: 0.95rem;
+            flex-grow: 1;
+        }
+
+        .myth-answer strong {
+            color: var(--primary-dark);
+            display: block;
+            margin-bottom: 6px;
+        }
+
+
+
+        /* 紅黃綠燈視覺化表格 */
+        .traffic-table-wrapper {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: #fff;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .traffic-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            min-width: 680px;
+        }
+
+        .traffic-table th, .traffic-table td {
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+
+        .traffic-table th {
+            background-color: #f1f5f9;
+            color: var(--secondary);
+            font-weight: 700;
+        }
+
+        .traffic-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .badge-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.92rem;
+            white-space: nowrap;
+        }
+
+        .badge-red { background: var(--danger-bg); color: var(--danger-text); border: 1px solid #fca5a5; }
+        .badge-yellow { background: var(--warning-bg); color: var(--warning-text); border: 1px solid #fcd34d; }
+        .badge-green { background: var(--success-bg); color: var(--success-text); border: 1px solid #86efac; }
+
+        .field-list {
+            list-style: none;
+            margin-top: 6px;
+        }
+
+        .field-list li {
+            position: relative;
+            padding-left: 18px;
+            margin-bottom: 4px;
+            font-size: 0.95rem;
+        }
+
+        .field-list li::before {
+            content: '•';
+            position: absolute;
+            left: 4px;
+            font-weight: bold;
+        }
+
+        /* 三大方案卡片 */
+        .solutions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .solution-card {
+            border-top: 4px solid var(--primary);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .solution-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--secondary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .solution-badge {
+            font-size: 0.88rem;
+            font-weight: 700;
+            padding-top: 10px;
+            border-top: 1px dashed var(--border);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* 互動檢核清單與進度條 */
+        .checklist-container {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .checklist-progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .checklist-title {
+            font-weight: 700;
+            color: var(--secondary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 10px;
+            background-color: #e2e8f0;
+            border-radius: 9999px;
+            overflow: hidden;
+            margin-bottom: 18px;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #0284c7, #10b981);
+            transition: width 0.3s ease;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 14px 16px;
+            border-radius: 8px;
+            background: #f8fafc;
+            margin-bottom: 10px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s ease;
+        }
+
+        .checklist-item:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+
+        .checklist-item.checked {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+        }
+
+        .checklist-item input[type="checkbox"] {
+            margin-top: 4px;
+            width: 20px;
+            height: 20px;
+            accent-color: var(--success);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .checklist-item-content {
+            font-size: 0.95rem;
+            color: var(--text-main);
+        }
+
+        .checklist-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 15px;
+        }
+
+        .btn-reset {
+            background: transparent;
+            color: var(--text-muted);
+            border: none;
+            font-size: 0.88rem;
+            cursor: pointer;
+            text-decoration: underline;
+            padding: 4px 8px;
+        }
+
+        .btn-reset:hover {
+            color: var(--danger);
+        }
+
+        /* 成功通過狀態提示 */
+        #checklist-success-banner {
+            display: none;
+            background: var(--success-bg);
+            border: 1px solid #86efac;
+            color: var(--success-text);
+            padding: 14px 18px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-weight: 700;
+            align-items: center;
+            gap: 10px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 回到頂部按鈕 */
+        #back-to-top {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            width: 46px;
+            height: 46px;
+            background-color: var(--secondary);
+            color: #ffffff;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: var(--shadow-md);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            z-index: 999;
+            transition: all 0.25s ease;
+        }
+
+        #back-to-top:hover {
+            background-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* 頁尾樣式（清爽淺色底） */
+        footer {
+            margin-top: 65px;
+            padding: 40px 20px 30px;
+            background: #f1f5f9;
+            color: #64748b;
+            text-align: center;
+            border-top: 1px solid var(--border);
+        }
+
+        .fb-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 1.05rem;
+            font-weight: 700;
+            padding: 11px 24px;
+            background: #1877f2;
+            border-radius: 9999px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 14px rgba(24, 119, 242, 0.25);
+            transition: all 0.25s ease;
+        }
+
+        .fb-link:hover {
+            background: #166fe5;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(24, 119, 242, 0.35);
+        }
+
+        .copyright-text {
+            font-size: 0.95rem;
+            color: #475569;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        /* 吉祥物容器 (左下角固定、霓虹發光、可拖曳) */
+        #mascot-container {
+            position: fixed;
+            bottom: 25px;
+            left: 25px;
+            width: 88px;
+            height: 88px;
+            z-index: 9998;
+            cursor: grab;
+            user-select: none;
+            touch-action: none;
+        }
+
+        #mascot-container:active {
+            cursor: grabbing;
+        }
+
+        #mascot-widget {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        #mascot-widget img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            pointer-events: none;
+            transition: filter 0.2s ease;
+        }
+
+        /* 懸停霓虹色彩發光 + 抖動 */
+        #mascot-container:hover img {
+            animation: mascot-shake 0.35s infinite ease-in-out, mascot-neon 1.2s infinite alternate;
+        }
+
+        /* 霓虹彩色光芒關鍵影格 */
+        @keyframes mascot-neon {
+            0% {
+                filter: drop-shadow(0 0 8px #ff007f) drop-shadow(0 0 16px #00ffff);
+            }
+            50% {
+                filter: drop-shadow(0 0 12px #39ff14) drop-shadow(0 0 22px #ff00ff);
+            }
+            100% {
+                filter: drop-shadow(0 0 10px #ffff00) drop-shadow(0 0 24px #00e5ff);
+            }
+        }
+
+        /* 抖動動態效果 */
+        @keyframes mascot-shake {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            20% { transform: translate(-2px, 2px) rotate(-3deg); }
+            40% { transform: translate(-2px, -2px) rotate(2deg); }
+            60% { transform: translate(2px, 2px) rotate(-1deg); }
+            80% { transform: translate(2px, -2px) rotate(3deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+
+        /* 吐司提示 (Toast Notification) */
+        #toast {
+            position: fixed;
+            top: 25px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-30px);
+            background: rgba(15, 23, 42, 0.95);
+            color: #ffffff;
+            padding: 10px 22px;
+            border-radius: 9999px;
+            font-size: 0.92rem;
+            font-weight: 500;
+            z-index: 10001;
+            box-shadow: var(--shadow-lg);
+            opacity: 0;
+            pointer-events: none;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        #toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* 列印專用樣式 (@media print) */
+        @media print {
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+                font-size: 12pt;
+            }
+            .hero {
+                background: #ffffff !important;
+                color: #000000 !important;
+                padding: 20px 0 !important;
+                border-bottom: 2px solid #000000 !important;
+            }
+            .hero p {
+                color: #333333 !important;
+            }
+            .law-badge {
+                border-color: #666666 !important;
+                color: #000000 !important;
+                background: transparent !important;
+            }
+            .action-bar,
+            #mascot-container,
+            #back-to-top,
+            .fb-link,
+            .btn-reset,
+            #toast {
+                display: none !important;
+            }
+            .card {
+                border: 1px solid #999999 !important;
+                box-shadow: none !important;
+                page-break-inside: avoid;
+                margin-bottom: 15px !important;
+                padding: 15px !important;
+            }
+            .traffic-table-wrapper {
+                border: 1px solid #000000 !important;
+                box-shadow: none !important;
+                overflow: visible !important;
+            }
+            .traffic-table th, .traffic-table td {
+                border: 1px solid #999999 !important;
+                padding: 8px !important;
+            }
+            footer {
+                background: transparent !important;
+                color: #333333 !important;
+                border-top: 1px solid #999999 !important;
+                padding: 15px 0 !important;
+            }
+            .copyright-text {
+                color: #000000 !important;
+            }
+        }
+
+        /* 響應式優化 */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 1.65rem; }
+            .hero p { font-size: 1rem; }
+            .section-title { font-size: 1.35rem; margin: 38px 0 18px; }
+            .myths-grid, .solutions-grid { grid-template-columns: 1fr; }
+            #mascot-container { width: 72px; height: 72px; bottom: 18px; left: 18px; }
+            #back-to-top { bottom: 18px; right: 18px; width: 42px; height: 42px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 頂部 Hero 區域 -->
+    <header class="hero">
+        <div class="container">
+            <div class="law-badge">
+                <i class="fa-solid fa-scale-balanced"></i> 符合中華民國《個人資料保護法》與《資通安全管理法》規範
+            </div>
+            <h1><i class="fa-solid fa-shield-halved"></i> 校園資安與個資保護行政指引</h1>
+            <p>全校各處室使用 Google Apps Script (GAS)、Google 試算表及雲端工具之合規作業手則</p>
+
+            <!-- 實用快捷按鈕工具列 -->
+            <div class="action-bar">
+                <button type="button" class="action-btn" onclick="window.print()">
+                    <i class="fa-solid fa-print"></i> 列印 / 另存為 PDF
+                </button>
+                <button type="button" class="action-btn" onclick="copyKeyTakeaways()">
+                    <i class="fa-solid fa-copy"></i> 複製合規重點摘要
+                </button>
+                <a href="#traffic-light-section" class="action-btn">
+                    <i class="fa-solid fa-traffic-light"></i> 紅黃綠燈判定表
+                </a>
+                <a href="#checklist-section" class="action-btn">
+                    <i class="fa-solid fa-list-check"></i> 上線前自檢表
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- 法律依據宣示卡片 -->
+        <section class="card legal-banner-card" aria-label="法律依據宣示">
+            <div style="display: flex; gap: 14px; align-items: flex-start;">
+                <i class="fa-solid fa-gavel fa-2x" style="color: var(--primary); margin-top: 2px;"></i>
+                <div>
+                    <h2 style="color: var(--primary-dark); font-size: 1.15rem; margin-bottom: 6px; font-weight: 700;">
+                        中華民國法規遵循原則與法律責任
+                    </h2>
+                    <p style="font-size: 0.95rem; color: #0369a1; margin-bottom: 8px;">
+                        依據<strong>《個人資料保護法》</strong>第 2 條、第 5 條（資料最小化原則）、第 15 條（公務機關執行法定職務必要範圍）、第 16 條（目的外利用限制），以及<strong>《資通安全管理法》</strong>與教育部<strong>《教育體系資通安全暨個人資料保護管理規範》</strong>：
+                    </p>
+                    <p style="font-size: 0.93rem; color: #0f172a;">
+                        公立學校未經資安弱點掃描、滲透測試與稽核審查之自建系統，<strong>嚴禁儲存國民身分證統一編號、出生年月日等中高機敏個資</strong>於公有雲試算表。若發生外洩事故，承辦人員與機關均須承擔相關行政與民刑事法律責任。
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 區塊一：迷思破除 -->
+        <section aria-labelledby="title-myths">
+            <h2 id="title-myths" class="section-title"><i class="fa-solid fa-circle-question"></i> 常見資安與法規迷思破除</h2>
+            <div class="myths-grid">
+                <article class="card myth-card">
+                    <div class="myth-header">
+                        <i class="fa-solid fa-circle-xmark"></i> 迷思一：用學校 Google 帳號就合法？
+                    </div>
+                    <div class="myth-answer">
+                        <strong>正解：學校教育雲硬碟本質仍屬公有雲外部伺服器！</strong>
+                        教育版 Google 帳號僅授權同仁一般行政辦公與協作使用，並非通過資安等級弱點掃描、滲透測試及具備 6 個月以上合規稽核日誌（Audit Log）的「合格資通系統」。
+                    </div>
+                </article>
+
+                <article class="card myth-card">
+                    <div class="myth-header">
+                        <i class="fa-solid fa-circle-xmark"></i> 迷思二：設定「限本校教職員」就能放個資？
+                    </div>
+                    <div class="myth-answer">
+                        <strong>正解：嚴重違反「最小權限原則」與公有雲儲存限制！</strong>
+                        若全校教職員帳號皆具備檢視權限，無業務權限同仁即可橫向越權調閱學生身分證與生日；教育部或外部主管機關實地資安稽核時，將直接開立重大缺失。
+                    </div>
+                </article>
+
+                <article class="card myth-card">
+                    <div class="myth-header">
+                        <i class="fa-solid fa-circle-xmark"></i> 迷思三：GAS 部署設為「僅限自己」可以嗎？
+                    </div>
+                    <div class="myth-answer">
+                        <strong>正解：無法解決業務需求且依然違規！</strong>
+                        將 Web App 改為僅限自己會導致其他使用者無法提交或查詢；更重要的是，法規禁止的是「高機敏資料上傳至公有雲」，試算表只要儲存身分證字號便已構成合規風險。
+                    </div>
+                </article>
+
+                <article class="card myth-card">
+                    <div class="myth-header">
+                        <i class="fa-solid fa-circle-xmark"></i> 迷思四：為什麼教育局端能用 Google 表單？
+                    </div>
+                    <div class="myth-answer">
+                        <strong>正解：單向投遞箱 vs 雙向查詢資料庫漏洞！</strong>
+                        Google 表單本質是原廠維護的「單向寫入投遞箱」；而自建 GAS 網站通常包含同仁自行編寫的「雙向查詢」邏輯，若缺乏防禦機制，全校名冊可能遭惡意爬蟲一次倒出。
+                    </div>
+                </article>
+
+                <article class="card myth-card">
+                    <div class="myth-header">
+                        <i class="fa-solid fa-circle-xmark"></i> 迷思五：用試算表隱藏欄位或設保護就安全？
+                    </div>
+                    <div class="myth-answer">
+                        <strong>正解：工作表保護僅為操作防呆，並非資料加密！</strong>
+                        試算表的「隱藏工作表」或「保護範圍」僅是前端介面顯示限制；任何具檢視權限者或透過開發者工具（F12）、GAS 程式碼與 API 呼叫，皆能直接提取隱藏欄位中的機敏個資。
+                    </div>
+                </article>
+
+                <article class="card myth-card">
+                    <div class="myth-header">
+                        <i class="fa-solid fa-circle-xmark"></i> 迷思六：家長簽過個資同意書就能放公有雲？
+                    </div>
+                    <div class="myth-answer">
+                        <strong>正解：公務執行恪遵「比例原則」與法令底線！</strong>
+                        法定授權無法免除《資通安全管理法》對公有雲機敏資料之防護規範；公立學校蒐集處理個資仍須嚴守「資料最小化原則」，不可因家長同意便將身分證等高機敏資料存放於雲端試算表。
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <!-- 區塊二：業務資料紅黃綠燈判定表 -->
+        <section id="traffic-light-section" aria-labelledby="title-traffic">
+            <h2 id="title-traffic" class="section-title"><i class="fa-solid fa-traffic-light"></i> 業務資料「紅黃綠燈」判定表</h2>
+
+            <!-- 紅黃綠燈表格 -->
+            <div class="traffic-table-wrapper">
+                <table class="traffic-table" id="traffic-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 140px;">管制級別</th>
+                            <th style="width: 40%;">資料內容類別與範例</th>
+                            <th>規範要求與因應方案</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr id="row-red" class="traffic-row" data-keywords="身分證 身分證字號 出生年月日 生日 病歷 特教 低收入戶 戶籍 完整成績 學籍 護照號碼 居留證號 郵局帳號 薪資">
+                            <td>
+                                <span class="badge-tag badge-red"><i class="fa-solid fa-ban"></i> 紅燈區</span>
+                            </td>
+                            <td>
+                                <strong style="color: var(--danger-text);">中高機敏性個人資料</strong>
+                                <ul class="field-list">
+                                    <li>國民身分證統一編號、新舊外僑居留證號</li>
+                                    <li>完整出生年月日（西元年/月/日）</li>
+                                    <li>身心病歷、特教鑑定診斷、心理諮商紀錄</li>
+                                    <li>低收入戶與中低收弱勢註記、銀行郵局局帳號</li>
+                                    <li>全校性未去識別化之完整成績與學籍名冊</li>
+                                </ul>
+                            </td>
+                            <td>
+                                <div style="color: var(--danger); font-weight: 700; margin-bottom: 6px;">
+                                    <i class="fa-solid fa-triangle-exclamation"></i> 絕對禁止放置於自建 GAS 或公有雲！
+                                </div>
+                                <p style="font-size: 0.93rem;">
+                                    請嚴格回歸<strong>主管機關合格授權之官方校務行政系統</strong>處理，或於校內隔離之公務電腦採取加密紙本/離線作業。
+                                </p>
+                            </td>
+                        </tr>
+                        <tr id="row-yellow" class="traffic-row" data-keywords="學號 班級 座號 姓名 公務信箱 學生信箱 社團志願 設備借用 簽到 研習報名 競賽 獎狀 聯絡電話">
+                            <td>
+                                <span class="badge-tag badge-yellow"><i class="fa-solid fa-triangle-exclamation"></i> 黃燈區</span>
+                            </td>
+                            <td>
+                                <strong style="color: var(--warning-text);">低敏感度公務與行政資料</strong>
+                                <ul class="field-list">
+                                    <li>學生學號、就讀班級、座號、中文姓名</li>
+                                    <li>學校公務信箱、教育雲帳號（@mail.edu.tw）</li>
+                                    <li>社團選填志願、課後班意願登記、比賽分組</li>
+                                    <li>校園設備器材借用登記、校內研習簽到表</li>
+                                    <li>單一活動專用之校內聯絡電話</li>
+                                </ul>
+                            </td>
+                            <td>
+                                <div style="color: var(--warning-text); font-weight: 700; margin-bottom: 6px;">
+                                    <i class="fa-solid fa-check"></i> 條件允許使用 GAS，須實施防護
+                                </div>
+                                <p style="font-size: 0.93rem;">
+                                    後端試算表格限本人存取，部署僅限本校網域帳號存取；查詢邏輯須在後端伺服器過濾單筆回傳，且活動結束後<strong>須備份並清空線上試算表</strong>。
+                                </p>
+                            </td>
+                        </tr>
+                        <tr id="row-green" class="traffic-row" data-keywords="公告 課表 行事曆 圖書推薦 抽籤 分組 教學工具 菜單 校園地圖 無個資 公開資訊">
+                            <td>
+                                <span class="badge-tag badge-green"><i class="fa-solid fa-circle-check"></i> 綠燈區</span>
+                            </td>
+                            <td>
+                                <strong style="color: var(--success-text);">無個人隱私之公開資訊</strong>
+                                <ul class="field-list">
+                                    <li>各處室公開行政公告整理與推播通知</li>
+                                    <li>圖書館優良圖書推薦、好書排行榜</li>
+                                    <li>各班公開課表、段考時程表、學校行事曆</li>
+                                    <li>課堂隨機抽籤、趣味分組與計分教學小工具</li>
+                                    <li>營養午餐菜單查詢、校園平面導覽地圖</li>
+                                </ul>
+                            </td>
+                            <td>
+                                <div style="color: var(--success-text); font-weight: 700; margin-bottom: 6px;">
+                                    <i class="fa-solid fa-thumbs-up"></i> 推薦廣泛採用與創新！
+                                </div>
+                                <p style="font-size: 0.93rem;">
+                                    完全不涉及個人可識別資訊（PII），非常適合教師與各處室使用 GAS 進行自動化串接，大幅提升行政與教學效能。
+                                </p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 區塊三：實務解套方案 -->
+        <section aria-labelledby="title-solutions">
+            <h2 id="title-solutions" class="section-title"><i class="fa-solid fa-toolbox"></i> 現行網站業務解套三方案</h2>
+            <div class="solutions-grid">
+                <article class="card solution-card">
+                    <div>
+                        <div class="solution-title">
+                            <i class="fa-solid fa-wand-magic-sparkles" style="color: var(--primary);"></i> 方案 A：欄位去識別化（最推薦）
+                        </div>
+                        <p style="font-size: 0.95rem; color: var(--text-main); margin-bottom: 12px;">
+                            維持現有 GAS 網站便利架構，僅<strong>自試算表中永久移除「國民身分證字號」與「完整出生年月日」</strong>。身分驗證改用「班級 + 座號 + 姓名」或「學生個人學號」。
+                        </p>
+                    </div>
+                    <div class="solution-badge" style="color: var(--success);">
+                        <i class="fa-solid fa-circle-check"></i> 系統不踩資安紅線，行政業務繼續安心運作
+                    </div>
+                </article>
+
+                <article class="card solution-card">
+                    <div>
+                        <div class="solution-title">
+                            <i class="fa-solid fa-server" style="color: var(--primary-dark);"></i> 方案 B：移轉至官方校務系統
+                        </div>
+                        <p style="font-size: 0.95rem; color: var(--text-main); margin-bottom: 12px;">
+                            若特定業務依據法律明確規定必須蒐集身分證字號（例如：學生團體保險加保、重大升學免試補助），請停止自建雲端表單，回歸主管機關授權通過資安檢驗之官方校務行政系統。
+                        </p>
+                    </div>
+                    <div class="solution-badge" style="color: var(--primary-dark);">
+                        <i class="fa-solid fa-lock"></i> 符合資通安全法嚴格稽核與日誌保存規範
+                    </div>
+                </article>
+
+                <article class="card solution-card">
+                    <div>
+                        <div class="solution-title">
+                            <i class="fa-solid fa-laptop-code" style="color: #6366f1;"></i> 方案 C：本機端離線自動化
+                        </div>
+                        <p style="font-size: 0.95rem; color: var(--text-main); margin-bottom: 12px;">
+                            若行政同仁因核對需要批次處理包含身分證之名冊，<strong>嚴禁上傳至任何雲端硬碟</strong>。建議於校內公務個人電腦本機端，使用 Excel VBA 巨集或本機 Python 腳本進行離線自動化處理。
+                        </p>
+                    </div>
+                    <div class="solution-badge" style="color: #6366f1;">
+                        <i class="fa-solid fa-shield-halved"></i> 機敏資料不離開公務電腦，合規安全有保障
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <!-- 區塊四：自檢清單 -->
+        <section id="checklist-section" aria-labelledby="title-checklist">
+            <h2 id="title-checklist" class="section-title"><i class="fa-solid fa-list-check"></i> GAS 系統上線前資安自檢清單</h2>
+            <div class="checklist-container">
+                <div class="checklist-progress-header">
+                    <div class="checklist-title">
+                        <i class="fa-solid fa-list-check" style="color: var(--primary);"></i> 合規達成進度：
+                        <span id="checklist-progress-text" style="color: var(--primary); font-weight: 900;">0 / 4 (0%)</span>
+                    </div>
+                    <button type="button" class="btn-reset" onclick="resetChecklist()">
+                        <i class="fa-solid fa-rotate-left"></i> 重設勾選狀態
+                    </button>
+                </div>
+                <div class="progress-bar-bg" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar-fill" id="progress-bar-fill"></div>
+                </div>
+
+                <div id="checklist-items">
+                    <label class="checklist-item">
+                        <input type="checkbox" data-index="0" onchange="updateChecklistProgress()">
+                        <div class="checklist-item-content">
+                            <strong>1. 資料最小化落實：</strong>
+                            後端 Google 試算表與 GAS 程式碼中，已確實排除「身分證統一編號、出生年月日、弱勢身分、病歷、金融帳號」等中高機敏資訊。
+                        </div>
+                    </label>
+
+                    <label class="checklist-item">
+                        <input type="checkbox" data-index="1" onchange="updateChecklistProgress()">
+                        <div class="checklist-item-content">
+                            <strong>2. 試算表共用權限封閉：</strong>
+                            關聯之 Google 試算表共用設定嚴格設定為「僅限業務承辦人個人存取」，絕無開啟「知道連結的任何人皆可檢視或編輯」。
+                        </div>
+                    </label>
+
+                    <label class="checklist-item">
+                        <input type="checkbox" data-index="2" onchange="updateChecklistProgress()">
+                        <div class="checklist-item-content">
+                            <strong>3. 後端安全過濾傳輸：</strong>
+                            網頁查詢機制係由 GAS 於「伺服器端」依輸入條件精確過濾後，僅回傳單一筆符合結果，絕無將整份工作表資料打包傳送至前端瀏覽器。
+                        </div>
+                    </label>
+
+                    <label class="checklist-item">
+                        <input type="checkbox" data-index="3" onchange="updateChecklistProgress()">
+                        <div class="checklist-item-content">
+                            <strong>4. 生命週期控管與封存：</strong>
+                            活動登記或調查截止後，已將資料匯出備份至校內公務電腦，並即刻清空線上試算表資料，同時將該 GAS 網頁部署停用或封存。
+                        </div>
+                    </label>
+                </div>
+
+                <!-- 達成 100% 成功訊息 -->
+                <div id="checklist-success-banner" role="alert">
+                    <i class="fa-solid fa-circle-check fa-lg"></i>
+                    <span>恭喜！已通過所有合規檢查項目，該 GAS 工具符合校園資安與個資保護標準！</span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 頁尾 -->
+    <footer>
+        <div class="container">
+            <!-- FB 粉絲專頁按鈕 -->
+            <div>
+                <a href="https://www.facebook.com/happyliyuchilltiger/" target="_blank" rel="noopener noreferrer" class="fb-link" title="造訪 快樂鯉魚秋老虎 Facebook 專頁">
+                    <i class="fa-brands fa-facebook fa-xl"></i>
+                    <span>快樂鯉魚秋老虎</span>
+                </a>
+            </div>
+            <!-- 版權宣告 -->
+            <div class="copyright-text">
+                Copyright &copy; Liyuchiutiger Gongminshen
+            </div>
+        </div>
+    </footer>
+
+    <!-- 回到頂端浮動按鈕 -->
+    <button type="button" id="back-to-top" title="回到頁面頂端" aria-label="回到頁面頂端">
+        <i class="fa-solid fa-arrow-up"></i>
+    </button>
+
+    <!-- 吐司通知元素 -->
+    <div id="toast" role="status" aria-live="polite">已複製到剪貼簿！</div>
+
+    <!-- 吉祥物元件 (左下角、霓虹發光、可拖曳) -->
+    <div id="mascot-container" title="我是資安吉祥物！可以按住拖曳移動喔！">
+        <div id="mascot-widget">
+            <img src="image/LiyuChillGuy.svg" alt="LiyuChillGuy 資安吉祥物" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><circle cx=\'50\' cy=\'50\' r=\'45\' fill=\'%230284c7\'/><text x=\'50\' y=\'58\' font-size=\'30\' text-anchor=\'middle\' fill=\'white\' font-family=\'sans-serif\'>🐯</text></svg>'">
+        </div>
+    </div>
+
+    <!-- JavaScript 腳本 -->
+    <script>
+        /* ----------------------------------------------------
+           1. 複製重點摘要與吐司通知 (Toast)
+        ---------------------------------------------------- */
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
+        }
+
+        function copyKeyTakeaways() {
+            const summaryText = 
+`【校園資安與個資保護行政指引 重點摘要】
+1. 紅燈區（嚴禁上傳公有雲/GAS）：國民身分證統一編號、出生年月日、病歷與特教、弱勢註記、完整成績名冊。請回歸官方校務行政系統。
+2. 黃燈區（條件開放）：學號、班級座號、姓名、公務信箱。試算表限本人存取，後端單筆過濾，活動後即清空線上資料。
+3. 綠燈區（推薦使用）：各類公開公告、圖書推薦、隨機抽籤與分組等完全無個資之教學小工具。
+4. 最佳解套三方案：方案 A 欄位去識別化（最推薦）、方案 B 移轉至官方校務系統、方案 C 本機端離線自動化處理。
+※ 出處：校園資安與個資保護守則（快樂鯉魚秋老虎）`;
+
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(summaryText).then(() => {
+                    showToast('已複製合規重點摘要至剪貼簿！');
+                }).catch(() => {
+                    fallbackCopyText(summaryText);
+                });
+            } else {
+                fallbackCopyText(summaryText);
+            }
+        }
+
+        function fallbackCopyText(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-9999px';
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showToast('已複製合規重點摘要至剪貼簿！');
+            } catch (err) {
+                showToast('複製失敗，請手動選取複製');
+            }
+            document.body.removeChild(textArea);
+        }
+
+        /* ----------------------------------------------------
+           2. 自檢清單進度計算與 LocalStorage 狀態儲存
+        ---------------------------------------------------- */
+        const checklistCheckboxes = document.querySelectorAll('#checklist-items input[type="checkbox"]');
+        const progressFill = document.getElementById('progress-bar-fill');
+        const progressText = document.getElementById('checklist-progress-text');
+        const successBanner = document.getElementById('checklist-success-banner');
+        const STORAGE_KEY = 'school_gas_checklist_v1';
+
+        function loadChecklistState() {
+            try {
+                const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+                checklistCheckboxes.forEach((cb, idx) => {
+                    cb.checked = !!saved[idx];
+                    updateItemStyle(cb);
+                });
+            } catch (e) {
+                // Ignore storage errors
+            }
+            updateChecklistProgress(false);
+        }
+
+        function saveChecklistState() {
+            const state = Array.from(checklistCheckboxes).map(cb => cb.checked);
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            } catch (e) {
+                // Ignore storage errors
+            }
+        }
+
+        function updateItemStyle(checkbox) {
+            const parentLabel = checkbox.closest('.checklist-item');
+            if (checkbox.checked) {
+                parentLabel.classList.add('checked');
+            } else {
+                parentLabel.classList.remove('checked');
+            }
+        }
+
+        function updateChecklistProgress(shouldSave = true) {
+            let checkedCount = 0;
+            checklistCheckboxes.forEach(cb => {
+                if (cb.checked) checkedCount++;
+                updateItemStyle(cb);
+            });
+
+            const total = checklistCheckboxes.length;
+            const percentage = Math.round((checkedCount / total) * 100);
+
+            progressFill.style.width = percentage + '%';
+            progressText.textContent = `${checkedCount} / ${total} (${percentage}%)`;
+
+            if (percentage === 100) {
+                successBanner.style.display = 'flex';
+                progressFill.style.background = 'var(--success)';
+            } else {
+                successBanner.style.display = 'none';
+                progressFill.style.background = 'linear-gradient(90deg, #0284c7, #10b981)';
+            }
+
+            if (shouldSave) {
+                saveChecklistState();
+            }
+        }
+
+        function resetChecklist() {
+            if (confirm('確定要重設所有自檢項目嗎？')) {
+                checklistCheckboxes.forEach(cb => cb.checked = false);
+                updateChecklistProgress(true);
+                showToast('已重設自檢清單');
+            }
+        }
+
+        loadChecklistState();
+
+        /* ----------------------------------------------------
+           3. 回到頂端 (Back to Top) 控制
+        ---------------------------------------------------- */
+        const backToTopBtn = document.getElementById('back-to-top');
+
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                backToTopBtn.style.display = 'flex';
+            } else {
+                backToTopBtn.style.display = 'none';
+            }
+        });
+
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        /* ----------------------------------------------------
+           4. 吉祥物互動與流暢拖曳
+        ---------------------------------------------------- */
+        const mascotContainer = document.getElementById('mascot-container');
+
+        // 拖曳邏輯優化（支援滑鼠與觸控移動）
+        let isDragging = false;
+        let startClientX = 0, startClientY = 0;
+        let initialLeft = 0, initialTop = 0;
+        let hasMoved = false;
+
+        mascotContainer.addEventListener('mousedown', onDragStart);
+        document.addEventListener('mousemove', onDragMove);
+        document.addEventListener('mouseup', onDragEnd);
+
+        mascotContainer.addEventListener('touchstart', onDragStart, { passive: false });
+        document.addEventListener('touchmove', onDragMove, { passive: false });
+        document.addEventListener('touchend', onDragEnd);
+
+        function onDragStart(e) {
+            isDragging = true;
+            hasMoved = false;
+            const isTouch = e.type.includes('touch');
+            startClientX = isTouch ? e.touches[0].clientX : e.clientX;
+            startClientY = isTouch ? e.touches[0].clientY : e.clientY;
+
+            const rect = mascotContainer.getBoundingClientRect();
+            initialLeft = rect.left;
+            initialTop = rect.top;
+
+            mascotContainer.style.bottom = 'auto';
+            mascotContainer.style.right = 'auto';
+            mascotContainer.style.left = initialLeft + 'px';
+            mascotContainer.style.top = initialTop + 'px';
+
+            if (isTouch) {
+                // 允許預設事件，直到實際產生位移才 preventDefault，避免阻礙滾動
+            }
+        }
+
+        function onDragMove(e) {
+            if (!isDragging) return;
+
+            const isTouch = e.type.includes('touch');
+            const currentX = isTouch ? e.touches[0].clientX : e.clientX;
+            const currentY = isTouch ? e.touches[0].clientY : e.clientY;
+
+            const dx = currentX - startClientX;
+            const dy = currentY - startClientY;
+
+            if (Math.abs(dx) > 4 || Math.abs(dy) > 4) {
+                hasMoved = true;
+            }
+
+            if (!hasMoved) return;
+
+            let newLeft = initialLeft + dx;
+            let newTop = initialTop + dy;
+
+            // 邊界保護：避免拖出可視範圍外
+            const padding = 10;
+            const maxLeft = window.innerWidth - mascotContainer.offsetWidth - padding;
+            const maxTop = window.innerHeight - mascotContainer.offsetHeight - padding;
+
+            newLeft = Math.max(padding, Math.min(newLeft, maxLeft));
+            newTop = Math.max(padding, Math.min(newTop, maxTop));
+
+            mascotContainer.style.left = newLeft + 'px';
+            mascotContainer.style.top = newTop + 'px';
+
+            if (e.cancelable) {
+                e.preventDefault();
+            }
+        }
+
+        function onDragEnd(e) {
+            if (!isDragging) return;
+            isDragging = false;
+        }
+
+        // 視窗縮放時保護吉祥物不跑出螢幕邊界外
+        window.addEventListener('resize', () => {
+            const rect = mascotContainer.getBoundingClientRect();
+            const padding = 10;
+            const maxLeft = window.innerWidth - mascotContainer.offsetWidth - padding;
+            const maxTop = window.innerHeight - mascotContainer.offsetHeight - padding;
+
+            if (rect.left > maxLeft) {
+                mascotContainer.style.left = Math.max(padding, maxLeft) + 'px';
+            }
+            if (rect.top > maxTop) {
+                mascotContainer.style.top = Math.max(padding, maxTop) + 'px';
+            }
+        });
+    </script>
+</body>
+</html>
